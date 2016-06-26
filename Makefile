@@ -13,18 +13,22 @@ SIZE = $(CROSS_COMPILE)size
 
 vpath %.c ./src
 
-INCLUDES  = -Isdk/component/soc/realtek/8195a/fwlib/rtl8195a
+INCLUDES  = -Isdk/component/soc/realtek/8195a/cmsis/device
+INCLUDES += -Isdk/component/soc/realtek/8195a/fwlib/rtl8195a
 INCLUDES += -Isdk/component/soc/realtek/8195a/fwlib
 INCLUDES += -Isdk/component/soc/realtek/common/bsp
 INCLUDES += -Isdk/component/soc/realtek/8195a/cmsis
-INCLUDES += -Isdk/component/soc/realtek/8195a/cmsis/device/
+INCLUDES += -Isdk/component/soc/realtek/8195a/cmsis/device
 INCLUDES += -Isdk/component/os/freertos
 INCLUDES += -Isdk/component/os/freertos/freertos_v8.1.2/Source/include
 INCLUDES += -Isdk/component/os/freertos/freertos_v8.1.2/Source/portable/GCC/ARM_CM3
-INCLUDES += -Isdk/component/common/drivers/wlan/realtek/include
 INCLUDES += -Isdk/component/common/api/wifi
+INCLUDES += -Isdk/component/common/drivers/wlan/realtek/include
 INCLUDES += -Isdk/component/common/drivers/wlan/realtek/src/osdep
 INCLUDES += -Isdk/component/common/drivers/sdio/realtek/sdio_host/inc
+INCLUDES += -Isdk/component/common/mbed/hal
+INCLUDES += -Isdk/component/common/mbed/hal_ext
+INCLUDES += -Isdk/component/common/mbed/targets/hal/rtl8195a
 INCLUDES += -Isdk/project/realtek_ameba1_va0_example/inc
 
 OUTPUT_PATH=build
