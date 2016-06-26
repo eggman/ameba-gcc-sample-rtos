@@ -100,10 +100,33 @@ ELF_ARLIST += ./sdk/lib/lib_ameba.a
 #ELF_ARLIST += ./sdk/lib/lib_sdcard.a
 
 
-all: $(OUTPUT_PATH)/target.axf
+#all: makebin/ram_all.bin
 
-makebin/ram_all.bin: $(OUTPUT_PATH)/target.axf
-	cd ./makebin && /bin/bash ./makebin.sh
+all: $(OUTPUT_PATH)/target.axf
+#makebin/ram_all.bin: $(OUTPUT_PATH)/target.axf
+#	cd ./makebin && /bin/bash ./makebin.sh
+
+makebin/ram_all.bin: makebin/target.map
+	$(eval RAM2_START_ADDR = 0x$(shell grep __ram_image2_text makebin/target.map | grep _start__ | awk '{print $$1}'))
+	$(eval RAM2_END_ADDR = 0x$(shell grep __ram_image2_text makebin/target.map | grep _end__ | awk '{print $$1}'))
+	$(eval RAM3_START_ADDR = 0x$(shell grep __sdram_data_ makebin/target.map | grep _start__ | awk '{print $$1}'))
+	$(eval RAM3_END_ADDR = 0x$(shell grep __sdram_data_ makebin/target.map | grep _end__ | awk '{print $$1}'))
+	arm-none-eabi-objcopy -j .image2.start.table -j .ram_image2.text -j .ram.data -Obinary build/target.axf  makebin/ram_2.bin
+	arm-none-eabi-objcopy -j .image3 -j .ARM.exidx -j .sdr_data -Obinary build/target.axf makebin/sdram.bin
+	tools/pick $(RAM2_START_ADDR) $(RAM2_END_ADDR) makebin/ram_2.bin makebin/ram_2.p.bin body+reset_offset+sig
+	tools/pick $(RAM2_START_ADDR) $(RAM2_END_ADDR) makebin/ram_2.bin makebin/ram_2.ns.bin body+reset_offset
+	tools/pick $(RAM3_START_ADDR) $(RAM3_END_ADDR) makebin/sdram.bin makebin/ram_3.p.bin body+reset_offset
+	cp  tools/ram_1.p.bin makebin/ram_1.p.bin
+	tools/padding 44k 0xFF makebin/ram_1.p.bin
+	cat makebin/ram_1.p.bin makebin/ram_2.p.bin makebin/ram_3.p.bin > makebin/ram_all.bin
+	cat makebin/ram_2.ns.bin makebin/ram_3.p.bin > makebin/ota.bin
+	tools/checksum makebin/ota.bin
+
+makebin/target.map: $(OUTPUT_PATH)/target.axf
+	arm-none-eabi-nm $(OUTPUT_PATH)/target.axf | sort > makebin/target.map
+	arm-none-eabi-objdump -d $(OUTPUT_PATH)/target.axf | sort > makebin/target.asm
+
+
 
 $(OUTPUT_PATH)/target.axf: $(addprefix $(OUTPUT_PATH)/,$(C_OBJ))
 	echo build all objects
